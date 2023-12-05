@@ -1,3 +1,8 @@
+// Justin K. Pelletier
+// CSCI-6655 Final Project Server
+// University of New Haven, Fall 2023
+// December 6th, 2023
+
 const http = require('http');
 const fs = require('fs');
 const {MongoClient} = require('mongodb');
@@ -7,10 +12,7 @@ const PORT = process.env.PORT || 3000;
 // create server
 const server = http.createServer((req, res) => {
 
-  console.log('==================================');
-  console.log(req.url, req.method);
-
-  // assign path extension, default = .html
+  // assign path extension
   const extension = path.extname(req.url);
 
   // assign content type
@@ -37,95 +39,86 @@ const server = http.createServer((req, res) => {
       default:
         contentType = 'text/html';
   }
+  
   // assign file path
   let filePath = path.join(__dirname, "public");
-  console.log(`extension:   ${extension}`);
   if(!extension && req.url !== '/' && req.url !== '/api') {
-    filePath = path.join(filePath, req.url + ".html")
-    console.log(`no extension:   ${filePath}`);
+    filePath = path.join(filePath, req.url + ".html");
   } else if(req.url === '/'){
-    filePath = path.join(filePath, "index.html")
-    console.log(` / :   ${filePath}`);
+    filePath = path.join(filePath, "index.html");
   } else if(req.url === '/api') {
-    filePath = path.join(filePath, 'db.json')
+    filePath = path.join(filePath, 'db.json');
   } else if(req.url !== '/') {
-    filePath = path.join(filePath, req.url)
-    console.log(` !/ :   ${filePath}`);
+    filePath = path.join(filePath, req.url);
   } else {
-    console.error('Invalid File Path. Directing to index.html')
-    filePath = path.join(__dirname, 'public', 'index.html')
+    console.log('LOG: Invalid File Path. Directing to index.html');
+    filePath = path.join(__dirname, 'public', 'index.html');
   }
 
   // check if file exists
   const pathExists = fs.existsSync(filePath);
 
-  // serve file if valid path
+  // serve data
   if(pathExists) {
-    if(req.url === '/api') {
-      serveFiles(filePath, 'application/json', res);
-    } else {
-      serveFiles(filePath, contentType, res);
-    }
+    req.url === '/api' ? serveAPI(res) : serveFiles(filePath, contentType, req, res);
   } else {
     res.writeHead(404, { "Content-Type": "text/html"});
     res.write(`<h1>404: File Not Found.</h1>\n\n<h3>The route ${req.url} does not exist.</h3>`);
     res.end();
+    console.log(`LOG: Serve failed [404] for ${req.method} (${req.url}) of type ${contentType}.`);
   }
 });
 
-  // listen to server
-  server.listen(PORT, (err) => {
-    let sub = err ? 'failed to start' : 'successfully started';
-    console.log(`Server ${sub} on port ${PORT}`);
-    !err ? console.log(`http://localhost:${PORT}`) : '';
-  }
-); 
+// listen to server
+server.listen(PORT, (err) => {
+  let sub = err ? 'failed to start' : 'successfully started';
+  console.log(`Server ${sub} on port ${PORT}`);
+  !err ? console.log(`http://localhost:${PORT}\n`) : '';
+}); 
 
 // async function to serve static files
-async function serveFiles(fPath, cType, response) {
+async function serveFiles(fPath, cType, request, response) {
   try {
     fs.readFile(fPath, "utf-8", (error, data) => {
       if(!error){
-        console.log(`SERVED: ${fPath} - ${cType}`);
-      response.writeHead(200, { "Content-Type" : cType })
-      cType === 'application/json' ? response.end(JSON.stringify(data)) : response.end(data);
+        response.writeHead(200, { "Content-Type" : cType });
+        cType === 'application/json' ? response.end(JSON.stringify(data)) : response.end(data);
+        console.log(`LOG: Serve successful [200] for ${request.method} (${request.url} - ${cType}) `);
       }
     });
   } catch (error) {
     response.statusCode = 500;
     console.error(error);
+    response.end();
+    console.log(`LOG: Serve failed for ${request.method} (${request.url} - ${cType}) `);
   }
 }
 
-// async function to fetch data from MongoDB
-async function dataHandler(word, type, func) {
-  const uri = 'mongodb+srv://justin:pelletier@playgroundcluster.rcsdgdw.mongodb.net/?retryWrites=true&w=majority';
-  const client = new MongoClient(uri);
+  // async function to fetch and serve data from MongoDB
+  async function serveAPI(response) {
+    const uri = 'mongodb+srv://justin:pelletier@playgroundcluster.rcsdgdw.mongodb.net/?retryWrites=true&w=majority';
+    const client = new MongoClient(uri);
 
-  try {
-    await client.connect();
-    console.log('LOG:  MongoDB server connection opened.');
-    switch(func) {
-      case 'fetch':
-        await fetchData(client, word, type);
-        break;
-      case 'add':
-        break;
-      default:
-        console.log('Invalid operation.');
+    try {
+      await client.connect();
+      console.log('LOG: MongoDB connection opened.');
+
+      // read data
+      const cursor = client.db("WordsFromWords").collection("words").find({});
+      const results = await cursor.toArray();
+      const numResults = results.length;
+      const data = JSON.stringify(results);
+      console.log(`LOG: Fetched ${numResults} results.`);
+
+      // serve data
+      response.writeHead(200, { "Content-Type" : "application/json" })
+      response.end(data);
+
+    } catch(error) {
+      console.log(error);
+    } finally {
+      client.close();
+      console.log('LOG: MongoDB connection closed.');
     }
-  } catch(error) {
-    console.log(error);
-  } finally {
-    await client.close();
-    console.log('LOG:  MongoDB server connection closed.');
   }
 
-}
-
-async function fetchData(client, word, type) {
-  const cursor = client.db("WordsFromWords").collection(type).find({});
-  const results = await cursor.toArray();
-  const js = JSON.stringify(results);
-  console.log(js);
-}

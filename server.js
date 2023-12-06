@@ -60,7 +60,7 @@ const server = http.createServer((req, res) => {
 
   // serve data
   if(pathExists) {
-    req.url === '/api' ? serveAPI(res) : serveFiles(filePath, contentType, req, res);
+    req.url === '/api' ? serveAPI(filePath, res) : serveFiles(filePath, contentType, req, res);
   } else {
     res.writeHead(404, { "Content-Type": "text/html"});
     res.write(`<h1>404: File Not Found.</h1>\n\n<h3>The route ${req.url} does not exist.</h3>`);
@@ -95,7 +95,7 @@ async function serveFiles(fPath, cType, request, response) {
 }
 
   // async function to fetch and serve data from MongoDB
-  async function serveAPI(response) {
+  async function serveAPI(fPath, response) {
     const uri = 'mongodb+srv://justin:pelletier@playgroundcluster.rcsdgdw.mongodb.net/?retryWrites=true&w=majority';
     const client = new MongoClient(uri);
     const headers = {
@@ -115,6 +115,15 @@ async function serveFiles(fPath, cType, request, response) {
       const data = JSON.stringify(results);
       console.log(`LOG: Fetched ${numResults} results.`);
 
+      // backup last fetch in db.json
+      fs.writeFile(fPath, data, (error) => {
+        if(error) {
+          console.log('LOG: Fetch backup failed to store in .JSON file.');
+        } else {
+          console.log('LOG: Fetch backup stored successfully in .JSON file.');
+        }
+      });
+
       // serve data
       response.writeHead(200, headers)
       response.end(data);
@@ -126,4 +135,3 @@ async function serveFiles(fPath, cType, request, response) {
       console.log('LOG: MongoDB connection closed.');
     }
   }
-

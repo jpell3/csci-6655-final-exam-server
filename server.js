@@ -98,6 +98,11 @@ async function serveFiles(fPath, cType, request, response) {
   async function serveAPI(response) {
     const uri = 'mongodb+srv://justin:pelletier@playgroundcluster.rcsdgdw.mongodb.net/?retryWrites=true&w=majority';
     const client = new MongoClient(uri);
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET",
+      "Content-Type" : "application/json",
+    };
 
     try {
       await client.connect();
@@ -111,7 +116,7 @@ async function serveFiles(fPath, cType, request, response) {
       console.log(`LOG: Fetched ${numResults} results.`);
 
       // serve data
-      response.writeHead(200, { "Content-Type" : "application/json" })
+      response.writeHead(200, headers)
       response.end(data);
 
     } catch(error) {

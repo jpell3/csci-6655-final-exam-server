@@ -10,7 +10,7 @@ The objective of this project was to test my knowledge in both Frontend and Back
 There were three major deliverable components and one optional component in this project.
 
 > [!IMPORTANT]
-> This repository contains only the BackEnd and MongoDB deliverables. See the **Related Repositories** section for more information.
+> This repository contains only the Wireframe, BackEnd, and MongoDB deliverables. See the **Related Repositories** section for more information.
 
 
 ### Wireframe

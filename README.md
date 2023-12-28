@@ -55,7 +55,7 @@ If desired, data can be imported to MongoDB and retrieved by the server to host 
 - API
 - CORS
 - MongoDBCompass, MongoDB drivers
-- GitHub
+- Git
 
 ## Related Repositories
 FrontEnd --> [Repository](https://github.com/jpell3/csci-6655-final-exam-vue) -- [Vue Application](https://csci-6655-final-exam-vue.onrender.com)  

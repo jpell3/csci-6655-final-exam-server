@@ -1,6 +1,6 @@
 {
   "name": "final-project-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This is the final project for CSCI-6655, Web Development. This is the NodeJS server used to host a personal website and the final project API.",
   "main": "index.js",
   "scripts": {

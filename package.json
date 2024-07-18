@@ -4,7 +4,6 @@
   "description": "This is the final project for CSCI-6655, Web Development. This is the NodeJS server used to host a personal website and the final project API.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "author": "jpelletier",

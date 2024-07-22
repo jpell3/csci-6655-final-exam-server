@@ -7,7 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const {MongoClient} = require('mongodb');
 const path = require('path');
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // create server
 const server = http.createServer((req, res) => {

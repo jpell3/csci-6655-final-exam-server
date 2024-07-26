@@ -11,6 +11,11 @@ const PORT = process.env.PORT || 8080;
 
 // create server
 const server = http.createServer((req, res) => {
+    if (path.normalize(decodeURI(req.url)) !== decodeURI(req.url)) {
+        res.statusCode = 403;
+        res.end();
+        return;
+    }
 
   // assign path extension
   const extension = path.extname(req.url);
